@@ -3,6 +3,7 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
+import store from './store'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 
@@ -13,10 +14,31 @@ axios.defaults.baseURL = 'http://localhost:8888/api'
 Vue.prototype.$axios = axios
 Vue.config.productionTip = false
 Vue.use(ElementUI)
+
+// 判断访问的路径是否需要登入,如果需要登入,判断store里有没有存储user的信息
+router.beforeEach((to, from, next) => {
+  if (to.meta.requireAuth) {
+    if (store.state.user.username) {
+      next()
+    } else {
+      next({
+        path: '/',
+        query: {redirect: to.fullPath}
+      })
+    }
+  } else {
+    next()
+  }
+}
+)
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
+  render: h => h(App),
   router,
+  store,
   components: { App },
   template: '<App/>'
-})
+}
+)
